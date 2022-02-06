@@ -5,6 +5,8 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.Date;
+import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -39,10 +41,16 @@ public class TableExporter {
             return "Double";
         } else if (o instanceof Boolean) {
             return "Boolean";
+        } else if (o instanceof Long) {
+            return "Long";
         } else if (o instanceof byte[]) {
             return "byte[]";
         } else if (o instanceof Timestamp) {
             return "Timestamp";
+        } else if (o instanceof Time) {
+            return "Time";
+        } else if (o instanceof Date) {
+            return "Date";
         }
         return "unknown";
     }
@@ -58,7 +66,7 @@ public class TableExporter {
                 metaInfo.put(columnName, Map.of("type", extractType(obj)));
                 res.put(columnName, obj);
             }
-            res.put("__metainfo", metaInfo);
+            res.put(App.METAINFO, metaInfo);
             try {
                 objectMapper.writeValue(os, res);
                 os.flush();
