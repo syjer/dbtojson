@@ -45,7 +45,7 @@ Create a export.json descriptor:
 }
 ```
 
-And then export with
+And then export with:
 
 > java -Dexport.bulk=export.json -jar dbtojson.jar
 
@@ -74,7 +74,7 @@ Create a import.json descriptor (you can copy the export one and modify it):
 }
 ```
 
-And then export with
+And then import with:
 
 > java -Dimport.bulk=export.json -jar dbtojson.jar
 
