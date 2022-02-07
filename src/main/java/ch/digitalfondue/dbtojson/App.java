@@ -28,8 +28,12 @@ public class App {
         var mapper = new ObjectMapper();
         mapper.configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false);
         var exportJdbcUrl = System.getProperty("export.jdbc.url");
+        var exportJdbcUsername = System.getProperty("export.jdbc.username");
+        var exportJdbcPassword = System.getProperty("export.jdbc.password");
         var exportTable = System.getProperty("export.table");
         var exportColumns = System.getProperty("export.columns");
+
+        var exportBulk = System.getProperty("export.bulk");
 
         var importJdbcUrl = System.getProperty("import.jdbc.url");
         var importTable = System.getProperty("import.table");
@@ -37,7 +41,12 @@ public class App {
         var importFile = System.getProperty("import.file");
 
         if (exportJdbcUrl != null && exportTable != null && exportColumns != null) {
-            exportData(mapper, exportJdbcUrl, exportTable, exportColumns);
+            exportData(mapper, exportJdbcUrl, exportJdbcUsername, exportJdbcPassword, exportTable, fromCSV(exportColumns), System.getProperty("export.file"));
+        } else if (exportBulk != null) {
+            var conf = mapper.readValue(new FileInputStream(exportBulk), BulkExport.class);
+            for (var tableInfo : conf.getTables()) {
+                exportData(mapper, conf.getJdbcUrl(), conf.getUsername(), conf.getPassword(), tableInfo.getName(), tableInfo.getColumns(), tableInfo.getName());
+            }
         } else if (importJdbcUrl != null && importTable != null && importColumns != null && importFile != null) {
             importData(mapper, importJdbcUrl, importTable, importColumns, importFile);
         } else {
@@ -82,16 +91,20 @@ public class App {
         return new BufferedReader(new InputStreamReader(i, StandardCharsets.UTF_8));
     }
 
-    private static void exportData(ObjectMapper mapper, String exportJdbcUrl, String exportTable, String exportColumns) throws IOException {
+    private static void exportData(ObjectMapper mapper,
+                                   String exportJdbcUrl,
+                                   String username,
+                                   String password,
+                                   String exportTable,
+                                   List<String> columns,
+                                   String file) throws IOException {
         var dsExport = new HikariDataSource();
         dsExport.setJdbcUrl(exportJdbcUrl);
-        dsExport.setUsername(System.getProperty("export.jdbc.username"));
-        dsExport.setPassword(System.getProperty("export.jdbc.password"));
-        var columns = fromCSV(exportColumns);
-        System.out.println(String.format("Exporting table %s with columns %s", exportTable, exportColumns));
+        dsExport.setUsername(username);
+        dsExport.setPassword(password);
+        System.out.println(String.format("Exporting table %s with columns %s", exportTable, columns.stream().collect(Collectors.joining(", "))));
         var jdbcTemplate = new NamedParameterJdbcTemplate(dsExport);
         var exporter = new TableExporter(exportTable, columns, jdbcTemplate, mapper);
-        var file = System.getProperty("export.file");
         PrintWriter os;
         if (file != null) {
             var f = new File(file + ".jsonl.gz");
