@@ -6,6 +6,8 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.sql.*;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -50,6 +52,10 @@ public class TableExporter {
             return "Time";
         } else if (o instanceof Date) {
             return "Date";
+        } else if (o instanceof BigDecimal) {
+            return "BigDecimal";
+        } else if (o instanceof BigInteger) {
+            return "BigInteger";
         }
         return "unknown";
     }

@@ -9,6 +9,8 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.sql.Date;
 import java.sql.Time;
 import java.sql.Timestamp;
@@ -88,6 +90,16 @@ public class TableImporter {
             param.addValue(name, new Time((long) o));
         } else if ("Date".equals(type)) {
             param.addValue(name, new Date((long) o));
+        } else if ("BigDecimal".equals(type)) {
+            if (o instanceof String) {
+                o = new BigDecimal((String) o);
+            }
+            param.addValue(name, o);
+        } else if ("BigInteger".equals(type)) {
+            if (o instanceof String) {
+                o = new BigInteger((String) o);
+            }
+            param.addValue(name, o);
         } else {
             param.addValue(name, o);
         }
