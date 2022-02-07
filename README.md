@@ -7,9 +7,82 @@ A small utility for
 
 All the code is under the Apache License Version 2.0.
 
+Any contribution welcome :).
+
+Currently you must build it yourself as it's not 100% clear if we can distribute the full jar
+with the drivers included.
+
+Currently the following drivers are included:
+
+ - mariadb
+ - postgresql
+ - oracle
+
 ## Use
 
-export:
+### Via descriptor
+
+
+#### Export:
+
+Create a export.json descriptor:
+
+```json
+{
+  "jdbcUrl": "jdbc:myjdbcurl",
+  "username": "username",
+  "password": "pwd",
+  "tables": [
+    {
+      "name": "table1",
+      "columns": ["col1", "col2"]
+    },
+    {
+      "name": "table2",
+      "columns": ["col1", "col2"]
+    }
+  ]
+}
+```
+
+And then export with
+
+> java -Dexport.bulk=export.json -jar dbtojson.jar
+
+#### Import:
+
+
+Create a import.json descriptor (you can copy the export one and modify it):
+
+```json
+{
+  "jdbcUrl": "jdbc:myjdbcurl",
+  "username": "username",
+  "password": "pwd",
+  "tables": [
+    {
+      "name": "table1",
+      "columns": ["col1", "col2"],
+      "file": "table1.jsonl.gz"
+    },
+    {
+      "name": "table2",
+      "columns": ["col1", "col2"],
+      "file": "table2.jsonl.gz"
+    }
+  ]
+}
+```
+
+And then export with
+
+> java -Dimport.bulk=export.json -jar dbtojson.jar
+
+### Via Params
+
+
+#### export:
+
 
 ```
 java  \
@@ -21,7 +94,8 @@ java  \
 ```
 
 
-import:
+#### import:
+
 
 ```
 java  \
