@@ -34,6 +34,7 @@ public class App {
         var exportColumns = System.getProperty("export.columns");
 
         var exportBulk = System.getProperty("export.bulk");
+        var importBulk = System.getProperty("import.bulk");
 
         var importJdbcUrl = System.getProperty("import.jdbc.url");
         var importTable = System.getProperty("import.table");
@@ -43,12 +44,18 @@ public class App {
         if (exportJdbcUrl != null && exportTable != null && exportColumns != null) {
             exportData(mapper, exportJdbcUrl, exportJdbcUsername, exportJdbcPassword, exportTable, fromCSV(exportColumns), System.getProperty("export.file"));
         } else if (exportBulk != null) {
-            var conf = mapper.readValue(new FileInputStream(exportBulk), BulkExport.class);
+            var conf = mapper.readValue(new FileInputStream(exportBulk), BulkOp.class);
             for (var tableInfo : conf.getTables()) {
                 exportData(mapper, conf.getJdbcUrl(), conf.getUsername(), conf.getPassword(), tableInfo.getName(), tableInfo.getColumns(), tableInfo.getName());
             }
         } else if (importJdbcUrl != null && importTable != null && importColumns != null && importFile != null) {
-            importData(mapper, importJdbcUrl, importTable, importColumns, importFile);
+            var columns = fromCSV(importColumns);
+            importData(mapper, importJdbcUrl, System.getProperty("import.jdbc.username"), System.getProperty("import.jdbc.password"), importTable, columns, importFile);
+        } else if (importBulk != null) {
+            var conf = mapper.readValue(new FileInputStream(importBulk), BulkOp.class);
+            for (var tableInfo : conf.getTables()) {
+                importData(mapper, conf.getJdbcUrl(), conf.getUsername(), conf.getPassword(), tableInfo.getName(), tableInfo.getColumns(), tableInfo.getFile());
+            }
         } else {
             System.err.println("Missing parameters, was not able to decide which mode (import/export) was requested");
         }
@@ -58,12 +65,11 @@ public class App {
         return Stream.of(value.split(",")).map(s -> s.trim()).collect(Collectors.toList());
     }
 
-    private static void importData(ObjectMapper mapper, String importJdbcUrl, String importTable, String importColumns, String importFile) throws IOException {
+    private static void importData(ObjectMapper mapper, String importJdbcUrl, String username, String password, String importTable, List<String> columns, String importFile) throws IOException {
         var dsImport = new HikariDataSource();
         dsImport.setJdbcUrl(importJdbcUrl);
-        dsImport.setUsername(System.getProperty("import.jdbc.username"));
-        dsImport.setPassword(System.getProperty("import.jdbc.password"));
-        var columns = fromCSV(importColumns);
+        dsImport.setUsername(username);
+        dsImport.setPassword(password);
         var jdbcTemplate = new NamedParameterJdbcTemplate(dsImport);
         var tm = new DataSourceTransactionManager(dsImport);
         var importer = new TableImporter(importTable, columns, Map.of(), mapper, jdbcTemplate, new TransactionTemplate(tm), 50);
