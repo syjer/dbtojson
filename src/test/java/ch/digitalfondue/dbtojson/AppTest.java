@@ -28,7 +28,7 @@ public class AppTest {
         App.main(new String[] {});
     }
 
-    @Test
+    //@Test
     public void importJsonWithBlob() throws IOException {
         System.setProperty("import.jdbc.url", "jdbc:postgresql://localhost:5432/alfio");
         System.setProperty("import.jdbc.username", "postgres");

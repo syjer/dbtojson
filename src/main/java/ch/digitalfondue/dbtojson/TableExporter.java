@@ -1,13 +1,12 @@
 package ch.digitalfondue.dbtojson;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.io.IOUtils;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.sql.Date;
-import java.sql.Time;
-import java.sql.Timestamp;
+import java.sql.*;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -63,6 +62,22 @@ public class TableExporter {
             var metaInfo = new LinkedHashMap<String, Map<String, String>>();
             for (var columnName: columnNames) {
                 var obj = rs.getObject(columnName);
+                if (obj instanceof Clob) {
+                    var clob = (Clob) obj;
+                    try (var r = clob.getCharacterStream()) {
+                        obj = IOUtils.toString(r);
+                    } catch (IOException e) {
+                        throw new IllegalStateException(e);
+                    }
+                }
+                if (obj instanceof Blob) {
+                    var blob = (Blob) obj;
+                    try (var is = blob.getBinaryStream()) {
+                        obj = IOUtils.toByteArray(is);
+                    } catch (IOException e) {
+                        throw new IllegalStateException(e);
+                    }
+                }
                 metaInfo.put(columnName, Map.of("type", extractType(obj)));
                 res.put(columnName, obj);
             }
