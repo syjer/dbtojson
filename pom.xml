@@ -11,7 +11,7 @@
 
   <groupId>ch.digitalfondue.dbtojson</groupId>
   <artifactId>dbtojson</artifactId>
-  <version>0.0.1</version>
+  <version>0.0.2-SNAPSHOT</version>
 
   <name>dbtojson</name>
   <url>https://github.com/syjer/dbtojson</url>
