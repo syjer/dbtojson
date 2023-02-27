@@ -9,14 +9,10 @@ All the code is under the Apache License Version 2.0.
 
 Any contribution welcome :).
 
-Currently you must build it yourself as it's not 100% clear if we can distribute the full jar
-with the drivers included.
-
 Currently the following drivers are included:
 
  - mariadb
  - postgresql
- - oracle
 
 ## Use
 
